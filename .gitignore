@@ -1,0 +1,67 @@
+# === General ===
+.DS_Store
+*.log
+*.env
+.env.local
+.env.*.local
+node_modules/
+dist/
+build/
+coverage/
+tmp/
+temp/
+
+# === OS / Editor ===
+.vscode/
+.idea/
+*.iml
+
+# === SvelteKit ===
+.svelte-kit/
+.svelte-kit-output/
+.svelte/
+
+# === Spring Boot ===
+/target/
+*.class
+*.jar
+*.war
+*.ear
+*.db
+*.h2.db
+
+# === Gradle/Maven ===
+.gradle/
+build/
+!gradle/wrapper/gradle-wrapper.jar
+*.lock
+pom.xml.tag
+pom.xml.releaseBackup
+pom.xml.versionsBackup
+pom.xml.next
+release.properties
+
+# === Environment/Security Configs ===
+src/main/resources/application.properties
+src/main/resources/application.yml
+src/main/resources/application-dev.properties
+src/main/resources/application-prod.properties
+
+# === Sensitive Java Files (optional stricter rules) ===
+**/WebSocketConfig.java
+**/ChatController.java
+
+# === Optional: IntelliJ + Eclipse + NetBeans ===
+*.ipr
+*.iws
+*.idea/
+*.project
+*.classpath
+.settings/
+.nb-gradle/
+
+# === Logs ===
+*.log
+logs/
+
+backend/target/
