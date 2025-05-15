@@ -16,13 +16,11 @@
   let waiting         = false;
   let showNoDebate    = false;
 
-  // 1️⃣ on mount, connect + subscribe
   onMount(() => {
     client = Stomp.over(() => new SockJS('http://localhost:8080/ws'));
     client.connect({}, () => {
       console.log('[WS] connected');
 
-      // load/refresh topic list
       client.subscribe(`/topic/${gameCode}`, ({ body }) => {
         const { type, topics: t } = JSON.parse(body);
         if (type === 'TOPIC_SYNC') {
@@ -32,22 +30,18 @@
         }
       });
 
-      // handle each “both-players-voted” event
       client.subscribe(`/topic/${gameCode}/topic-complete`, ({ body }) => {
         const { topicIndex, disagree } = JSON.parse(body);
         console.log('[TOPIC-COMPLETE]', topicIndex, disagree);
 
-        // guard: only act on the *current* topic
         if (topicIndex !== currentIndex) return;
 
         waiting = false;
 
         if (disagree) {
-          // 🚀 immediate redirect on first mismatch
           return goto(`/game/${gameCode}/chat`);
         }
 
-        // all agreed: either advance or finish
         if (currentIndex + 1 < topics.length) {
           currentIndex += 1;
         } else {
@@ -55,7 +49,6 @@
         }
       });
 
-      // kick it off
       client.send(
         '/app/start-topics',
         {},
@@ -68,39 +61,44 @@
     };
   });
 
-  // send your vote
-	function sendDecision(vote) {
-		if (!client?.connected) return;
+function sendDecision(vote) {
+  if (!client?.connected) return;
 
-		waiting = true;
+  waiting = true;
 
-		// Save topic for chat context
-		sessionStorage.setItem("currentTopic", topics[currentIndex]);
-		sessionStorage.setItem("myStance", vote);
+  sessionStorage.setItem("currentTopic", topics[currentIndex]);
+  sessionStorage.setItem("myStance", vote);
 
-		// Set P1 and P2 names
-		const isCreator = sessionStorage.getItem("isCreator") === "true";
-		if (isCreator) {
-			sessionStorage.setItem("p1", playerName);
-			sessionStorage.setItem("p1Stance", vote);
-		} else {
-			sessionStorage.setItem("p2", playerName);
-			sessionStorage.setItem("p2Stance", vote);
-		}
+  const isCreator = sessionStorage.getItem("isCreator") === "true";
 
-		client.send(
-			'/app/vote',
-			{},
-			JSON.stringify({
-				gameCode,
-				playerName,
-				topicIndex: currentIndex,
-				vote
-			})
-		);
-	}
+  let p1Stance, p2Stance;
 
+  if (isCreator) {
+    p1Stance = vote;
+    p2Stance = vote === "agree" ? "disagree" : "agree";
+    sessionStorage.setItem("p1", playerName);
+  } else {
+    p2Stance = vote;
+    p1Stance = vote === "agree" ? "disagree" : "agree";
+    sessionStorage.setItem("p2", playerName);
+  }
+
+  sessionStorage.setItem("p1Stance", p1Stance);
+  sessionStorage.setItem("p2Stance", p2Stance);
+
+  client.send(
+    '/app/vote',
+    {},
+    JSON.stringify({
+      gameCode,
+      playerName,
+      topicIndex: currentIndex,
+      vote
+    })
+  );
+}
 </script>
+
 
 <svelte:head>
   <link

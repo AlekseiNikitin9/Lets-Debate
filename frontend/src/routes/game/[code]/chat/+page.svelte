@@ -10,13 +10,13 @@
   let message = '';
   let messages = [];
 
-  const gameCode = $page.params.code;
+  const gameCode   = $page.params.code;
   const playerName = sessionStorage.getItem('playerName');
-  const topic     = sessionStorage.getItem("currentTopic");
-  const p1Name    = sessionStorage.getItem("p1");
-  const p2Name    = sessionStorage.getItem("p2");
-  const p1Stance  = sessionStorage.getItem("p1Stance");
-  const p2Stance  = sessionStorage.getItem("p2Stance");
+  const topic      = sessionStorage.getItem("currentTopic");
+  const p1Name     = sessionStorage.getItem("p1");
+  const p2Name     = sessionStorage.getItem("p2");
+  const p1Stance   = sessionStorage.getItem("p1Stance");
+  const p2Stance   = sessionStorage.getItem("p2Stance");
 
   onMount(() => {
     client = new Client({
@@ -45,7 +45,6 @@
       text: message.trim()
     };
 
-    // Send to server (broadcast)
     client.publish({
       destination: '/app/chat',
       body: JSON.stringify(payload)
@@ -56,12 +55,12 @@
 
   const handleRefereeCall = async () => {
     if (!topic || !p1Stance || !p2Stance) {
-      alert(topic, p1Stance, p2Stance, "Missing context. Please go back and vote again.");
+      alert("Missing context. Please go back and vote again.");
       return;
     }
 
     messages = [...messages, {
-      sender: 'AI',
+      sender: 'Referee',
       text: '🔍 Evaluating your point...'
     }];
 
@@ -73,13 +72,13 @@
         playerName
       }));
 
-
       console.log('[AI CALL]', res.status);
     } catch (err) {
       console.error('[ERROR] Calling AI referee', err);
     }
   };
 </script>
+
 
 
 <style>

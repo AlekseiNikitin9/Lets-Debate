@@ -102,6 +102,7 @@ public class WebSocketController {
         gameRepository.save(game); // cascade saves chatRoom too
 
         // Broadcast to clients
+        System.out.println("sending a message: " + message );
         messagingTemplate.convertAndSend("/topic/" + code + "/chat", message);
     }
 }
