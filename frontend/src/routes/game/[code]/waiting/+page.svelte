@@ -26,7 +26,7 @@
 
     // ✅ Create STOMP client
     client = new Client({
-      webSocketFactory: () => new SockJS('http://192.168.0.121:8080/ws'),
+      webSocketFactory: () => new SockJS('http://localhost:8080/ws'),
       reconnectDelay: 5000,
       debug: (str) => console.log('[STOMP]', str),
       onConnect: () => {
