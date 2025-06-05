@@ -10,7 +10,7 @@
   import TopBar from '$lib/components/TopBar.svelte';
 
   $: gameCode = $page.params.code;
-
+  let destination = 'http://localhost:8080';
   let dots = '.';
   let interval;
   let gameCode = $page.params.code;
@@ -26,7 +26,7 @@
 
     // ✅ Create STOMP client
     client = new Client({
-      webSocketFactory: () => new SockJS('http://localhost:8080/ws'),
+      webSocketFactory: () => new SockJS(`${destination}/ws`),
       reconnectDelay: 5000,
       debug: (str) => console.log('[STOMP]', str),
       onConnect: () => {

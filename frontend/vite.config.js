@@ -15,5 +15,9 @@ export default defineConfig({
     rollupOptions: {
       plugins: [rollupNodePolyFill()]
     }
+  },
+  server: {
+    host: true, // 👈 allows LAN access (binds to 0.0.0.0)
+    port: 5173  // 👈 optional; change if you want a custom port
   }
 });

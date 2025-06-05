@@ -3,6 +3,7 @@ let code = '';
 let name = '';
 let stage = 'select';
 let action = '';
+let destination = "http://localhost:8080"
 import { Client } from '@stomp/stompjs';
 import SockJS from 'sockjs-client';
 import { goto } from '$app/navigation';
@@ -35,7 +36,7 @@ const handleSubmitName = async () => {
 	sessionStorage.setItem("playerName", name);
 
   if (action === 'join') {
-    const res = await fetch(`http://localhost:8080/api/game/${code}/join`, {
+    const res = await fetch(`${destination}/api/game/${code}/join`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ name })
@@ -44,7 +45,7 @@ const handleSubmitName = async () => {
     if (res.ok) {
       // ✅ Create a STOMP client just to send the event
       const stompClient = new Client({
-        webSocketFactory: () => new SockJS('http://localhost:8080/ws'),
+        webSocketFactory: () => new SockJS(`${destination}/ws`),
         onConnect: () => {
           // ✅ Send to server-side handler @MessageMapping("/joined")
           stompClient.publish({
@@ -67,7 +68,7 @@ const handleSubmitName = async () => {
   }
 
   if (action === 'create') {
-    const res = await fetch('http://localhost:8080/api/game/create', {
+    const res = await fetch(`${destination}/api/game/create`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ name })

@@ -61,7 +61,11 @@ public class GameController {
             //messagingTemplate.convertAndSend("/topic/" + code, event);
 
             game.setStatus(GameStatus.IN_PROGRESS);
-            game.setChatRoom(new ChatRoom());
+            ChatRoom room = new ChatRoom();
+            room.setGameCode(game.getCode());
+            room.setPlayer1Name(game.getPlayer1());
+            room.setPlayer2Name(request.getName());
+            game.setChatRoom(room);
         } else {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Game is full");
         }

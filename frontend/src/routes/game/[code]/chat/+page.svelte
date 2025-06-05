@@ -5,10 +5,22 @@
   import TopBar from '$lib/components/TopBar.svelte';
   import SockJS from 'sockjs-client';
   import { Client } from '@stomp/stompjs';
+  import { writable } from 'svelte/store';
 
   let client;
   let message = '';
+  let refCallsUsed = writable(0);
+  let isMobile = false;
+  let chatWindow;
   let messages = [];
+  let destination = "http://localhost:8080"
+
+  $: if (messages.length && chatWindow) {
+    chatWindow.scrollTo({
+      top: chatWindow.scrollHeight,
+      behavior: 'smooth'
+    });
+  }
 
   const gameCode   = $page.params.code;
   const playerName = sessionStorage.getItem('playerName');
@@ -19,8 +31,10 @@
   const p2Stance   = sessionStorage.getItem("p2Stance");
 
   onMount(() => {
+    const ua = navigator.userAgent;
+    isMobile = /Android|iPhone|iPad|iPod|Opera Mini|IEMobile|WPDesktop/i.test(ua);
     client = new Client({
-      webSocketFactory: () => new SockJS('http://localhost:8080/ws'),
+      webSocketFactory: () => new SockJS(`${destination}/ws`),
       debug: str => console.log('[STOMP]', str),
       reconnectDelay: 5000,
       onConnect: () => {
@@ -34,6 +48,11 @@
     });
 
     client.activate();
+    fetch(`${destination}/api/chat/${gameCode}/refcalls?playerName=${playerName}`)
+      .then(res => res.json())
+      .then(data => {
+        refCallsUsed = data.used || 0;
+      });
   });
 
   const handleSend = async () => {
@@ -54,6 +73,8 @@
   };
 
   const handleRefereeCall = async () => {
+    if (refCallsUsed >= 2) return;
+    refCallsUsed += 1; 
     if (!topic || !p1Stance || !p2Stance) {
       alert("Missing context. Please go back and vote again.");
       return;
@@ -65,7 +86,7 @@
     }];
 
     try {
-      const res = await fetch(`http://localhost:8080/api/chat/${gameCode}/callref?` + new URLSearchParams({
+      const res = await fetch(`${destination}/api/chat/${gameCode}/callref?` + new URLSearchParams({
         topic,
         p1Stance,
         p2Stance,
@@ -77,6 +98,9 @@
       console.error('[ERROR] Calling AI referee', err);
     }
   };
+  
+
+
 </script>
 
 
@@ -85,7 +109,7 @@
   html, body {
     margin: 0;
     padding: 0;
-    overflow: hidden;
+    overflow: auto;
     font-family: 'Segoe UI', sans-serif;
   }
 
@@ -100,6 +124,7 @@
     align-items: center;
     justify-content: space-between;
     overflow: hidden;
+    min-height: 100dvh;
   }
 
   .chat-window {
@@ -170,6 +195,11 @@
     cursor: pointer;
     font-family: 'Rubik', sans-serif;
     z-index: 2;
+    transition: border 0.2s ease-in-out;
+  }
+
+  .ref-button:hover {
+    border: 2px solid #000;
   }
 
   .shape {
@@ -226,6 +256,11 @@
     transform: scale(1.1);
   }
 
+  .mobile-padding {
+    padding-bottom: 80px;
+  }
+
+
   @keyframes float1 {
     0% { transform: translate(0, 0) rotate(0deg); }
     50% { transform: translate(25px, -20px) rotate(6deg); }
@@ -245,14 +280,14 @@
   }
 </style>
 
-<div class="container">
+<div class="container {isMobile ? 'mobile-padding' : ''}">
   <div class="shape circle"></div>
   <div class="shape triangle"></div>
   <div class="shape square"></div>
 
   <TopBar gameCode={gameCode} />
 
-  <div class="chat-window">
+  <div class="chat-window" bind:this={chatWindow}>
     {#each messages as msg (msg.text + msg.sender + Math.random())}
       <div class="message {msg.sender === playerName ? 'you' : 'other'}">
         <strong>{msg.sender}:</strong> {msg.text}
@@ -260,8 +295,12 @@
     {/each}
   </div>
 
-  <button class="ref-button" on:click={handleRefereeCall}>
-    Call AI Referee 🤖
+  <button
+    class="ref-button"
+    on:click={handleRefereeCall}
+    disabled={refCallsUsed >= 2}
+    style="opacity: {refCallsUsed >= 2 ? 0.4 : 1}; cursor: {refCallsUsed >= 2 ? 'not-allowed' : 'pointer'};">
+    Call AI Referee ({refCallsUsed}/2)
   </button>
 
   <div class="chat-box">

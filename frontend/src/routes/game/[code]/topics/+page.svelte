@@ -15,9 +15,10 @@
   let currentIndex    = 0;
   let waiting         = false;
   let showNoDebate    = false;
+  let destination = "http://localhost:8080";
 
   onMount(() => {
-    client = Stomp.over(() => new SockJS('http://localhost:8080/ws'));
+    client = Stomp.over(() => new SockJS(`${destination}/ws`));
     client.connect({}, () => {
       console.log('[WS] connected');
 
