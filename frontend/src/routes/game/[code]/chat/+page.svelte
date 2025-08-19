@@ -6,6 +6,7 @@
   import SockJS from 'sockjs-client';
   import { Client } from '@stomp/stompjs';
   import { writable } from 'svelte/store';
+  import { goto } from '$app/navigation'
 
   let client;
   let message = '';
@@ -29,6 +30,8 @@
   const p2Name     = sessionStorage.getItem("p2");
   const p1Stance   = sessionStorage.getItem("p1Stance");
   const p2Stance   = sessionStorage.getItem("p2Stance");
+  
+
 
   onMount(() => {
     const ua = navigator.userAgent;
@@ -43,6 +46,8 @@
         client.subscribe(`/topic/${gameCode}/chat`, (msg) => {
           const data = JSON.parse(msg.body);
           messages = [...messages, data];
+
+          checkFinaleRedirect().catch(console.error);
         });
       }
     });
@@ -72,6 +77,23 @@
     message = '';
   };
 
+  const checkFinaleRedirect = async () => {
+    const [p1Res, p2Res] = await Promise.all([
+      fetch(`${destination}/api/chat/${gameCode}/refcalls?playerName=${p1Name}`).then(r => r.json()),
+      fetch(`${destination}/api/chat/${gameCode}/refcalls?playerName=${p2Name}`).then(r => r.json())
+    ]);
+
+    if (p1Res.used >= 2 && p2Res.used >= 2) {
+      messages = [
+        ...messages,
+        { sender: "System", text: "Both players have used up their referee calls. Redirecting shortly..." }
+      ];
+      await new Promise(r => setTimeout(r, 5000));
+      goto(`/game/${gameCode}/finale`);
+    }
+  };
+
+
   const handleRefereeCall = async () => {
     if (refCallsUsed >= 2) return;
     refCallsUsed += 1; 
@@ -97,6 +119,8 @@
     } catch (err) {
       console.error('[ERROR] Calling AI referee', err);
     }
+
+    await checkFinaleRedirect();
   };
   
 
