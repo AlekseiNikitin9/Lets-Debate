@@ -158,6 +158,7 @@
     padding: 1rem;
     overflow-y: auto;
     z-index: 1;
+    margin-top: 56px;
   }
 
   .message {

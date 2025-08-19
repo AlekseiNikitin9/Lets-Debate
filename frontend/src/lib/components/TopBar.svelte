@@ -4,16 +4,17 @@
 
 <style>
   .top-bar {
-    position: relative;
+    position: fixed;      
     top: 0;
-    width: 100%;
-    padding: 1rem;
+    left: 0;
+    right: 0;
+    padding: 0.75rem 1rem;
     background: #333333;
     color: #ffffff;
     font-size: 1.2rem;
     font-weight: bold;
     text-align: center;
-    z-index: 10;
+    z-index: 100;       
     box-shadow: 0 2px 8px rgba(0,0,0,0.1);
   }
 </style>
